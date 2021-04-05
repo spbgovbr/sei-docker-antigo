@@ -1,38 +1,60 @@
-# SEI
+# SEI - Docker
 
-[Conteiner](#conteiner-de-aplicacao-para-o-sei)
+Caso esteja procurando o projeto antigo para o SEI3 que havia aqui pule para a branch [SEI3x-Docker-Antigo](https://github.com/spbgovbr/sei-docker/tree/SEI3x-Docker-Antigo)
 
-[Base de Dados e Backup](#base-de-dados-do-seimp)
+# Projeto de Infraestrutura sob Código para o SEI
+
+Esse projeto altamente parametrizável permitirá ao administrador de infraestrutura subir um SEI completo, com todos os componentes necessários para o seu uso imediato em ambiente de DTH.
+
+Nesse momento vamos focar o esforço para um ambiente de Desenvolvimento / Testes / Treinamento ou Primeira Homologação - DTH. 
+
+**Não recomendado para produção.** 
+Configurações e ajustes em produção deverão ser observadas todas as recomendações na documentação do TRF, do PEN e as melhores práticas de infraestrutura de TI comercialmente aceitas. Eventualmente dependendo das necessidades dos órgãos e priorizações alinhadas com a comunidade poderemos evoluir a entrega para algo mais próximo de produção. Porém importante frisar que os ativos de segurança, como firewall, filtro de conteúdo, backup entre outros ficam a cargo do órgão responsável. 
+
+**Atenção** 
+O código fonte do SEI é propriedade do TRF4. Sob nenhuma hipótese o mesmo deverá ser distribuído, emprestado ou salvo em qualquer lugar que não seja privativo da TI do orgão.
+
+Para maiores informações sobre o código fonte consulte o site do [processoeletronico.gov.br](http://processoeletronico.gov.br)
+
+## Serviços
+
+Através de um único comando poderão ser provisionados os serviços listados abaixo.
+
+**Servicos:**
+- nó(s) de aplicação
+- balanceador
+- memcached
+- solr
+- banco de dados
+- banco de dados de auditoria
+- jod
+- agendador
+- openldap
 
 
-# Conteiner de Aplicação para o SEI
+Cada serviço tem seu próprio nível de customização e o administrador poderá decidir por exemplo se deseja usar o banco de dados provisionado pelo projeto de provisionamento ou usar seu próprio banco de dados.
+O mesmo vale para qualquer outro serviço.
 
-Versão inicial do conteiner de aplicação
+**Recursos dinâmicos**
+Volumes de dados: 
+- arquivos externos
+- certificados
+- solr-data
+- banco de dados
+- banco de dados de auditoria
+- base de dados openldap
 
-Como o codigo fonte do SEI é restrito não poderá ficar exposto aqui nesse projeto público.
+Alguns dos parâmetros externos que será possível informar ao rodar o projeto:
 
-Aqui ficam os conteineres:
-- com o Apache de aplicação
-- bem como um segundo conteiner com o Apache mais o supervisor para rodar as rotinas do barramento PEN
+- URLs de acesso para o SEI e serviços, como administração do Solr
+- http/https
+- Certificados (usar um próprio ou mandar criar um auto-assinado)
+- Escolha da versão do SEI (inicialmente apenas SEI4)
+- Instalação de módulo e sua versão
+- Escolha do banco de dados desejado com a base de referência
 
-Adicione à pasta "sei-docker/containeres/sei-app/fontes" os arquivos com o código fonte do SEI na versão desejada e também adicione o código fonte na respectiva pasta "sei-docker/containeres/sei-app/fontes/sei/web/modulos"
+## Publicação e Orquestração
 
-Os módulos são (e devem estar respectivamente com o seguinte nome):
+Inicialmente a entrega vai focar em mono máquina. Mas está previsto no nosso roadmap entregar também a instalação em várias máquinas. Para isso vamos usar o Rancher/Cattle, Rancher/Kubernetes 
 
-- barramento (mod-sei-barramento')
-- Aplicativo SEI (mod-wssei)
-- Protocolo Integrado (mp/protocolo_integrado)
-- Peticionamento Eletronico (peticionamento)
-
-
- Por favor sugerir correções e melhorias.
- 
-
-## Base de Dados do SEIMP
-[Banco de Dados](docs/sei-banco.md)
-
-
-## Backup do SEIMP
-
-[Política de Backup](docs/sei-politica-backup.md)
-
+Além disso iremos publicar aqui a nossa esteira de testes em jenkins, que além de instalar um ambiente do zero com os módulos desejados, faz a execução dos testes funcionais que já escrevemos para alguns módulos, usando um cluster com SeleniumGrid.
