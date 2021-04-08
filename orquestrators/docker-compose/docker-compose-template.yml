@@ -35,7 +35,7 @@ services:
   
   
     solr:
-        image: linhares/tmp:1
+        image: ${DOCKER_IMAGE_SOLR}
         
     app:
         image: ${DOCKER_IMAGE_APP}

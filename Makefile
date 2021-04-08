@@ -15,6 +15,7 @@ help:   ## Lista de comandos disponiveis e descricao. Voce pode usar TAB para co
 montar_volume_fontes: ## Monte o volume docker com os fontes que serao consumidos pelo projeto
 	docker run --rm -v $(LOCALIZACAO_FONTES_SEI):/source -v local-fontes-storage:/opt -w /source alpine sh -c "cp -R infra sei sip /opt/"
 
+
 build_docker_compose: ## Construa o docker-compose.yml baseado no arquivo envlocal.env
 	rm -f orquestrators/docker-compose/docker-compose.yml
 
@@ -36,4 +37,8 @@ logs: ## docker-compose logs -f pressione ctrol+c para sair
 clear: ## para o projeto e remove tds os volumes criados
 	make stop
 	$(COMMMADCOMPOSE) down -v
+
+clear_volume_fontes: ## Monte o volume docker com os fontes que serao consumidos pelo projeto
+	docker volume rm $(VOLUME_FONTES)
+
 
