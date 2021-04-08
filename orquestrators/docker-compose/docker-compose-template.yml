@@ -1,0 +1,76 @@
+version: '2'
+volumes:
+    ${VOLUME_DB}:
+        external: ${VOLUME_DB_EXTERNAL}
+        driver: ${VOLUME_DB_DRIVER}
+    ${VOLUME_ARQUIVOSEXTERNOS}:
+        external: ${VOLUME_ARQUIVOSEXTERNOS_EXTERNAL}
+        driver: ${VOLUME_ARQUIVOSEXTERNOS_DRIVER}
+    ${VOLUME_FONTES}:
+        external: true
+        
+services:
+    storage-arquivosexternos:
+        image: "busybox:latest"
+        labels:
+            io.rancher.container.start_once: "true"
+        volumes:
+            - ${VOLUME_ARQUIVOSEXTERNOS_MOUNT}:/dados:rw
+    
+    storage-fontes:
+        image: "busybox:latest"
+        labels:
+            io.rancher.container.start_once: "true"
+        volumes:
+            - ${VOLUME_FONTES_MOUNT}:/opt:rw
+    
+    jod:
+        image: ${DOCKER_IMAGE_JOD}
+
+    memcached:
+        image: ${DOCKER_IMAGE_MEMCACHED}
+
+    db:
+        image: ${DOCKER_IMAGE_BD}
+  
+  
+    solr:
+        image: linhares/tmp:1
+        
+    app:
+        image: ${DOCKER_IMAGE_APP}
+        dns: "8.8.8.8"
+        command: ""
+        entrypoint: "/entrypoint.sh"
+        ports:
+            - "80:80"
+        volumes_from:
+            - storage-arquivosexternos
+            - storage-fontes
+        labels:
+            io.rancher.container.pull_image: always
+            io.rancher.sidekicks: storage-arquivosexternos
+            io.rancher.sidekicks: storage-fontes        
+        environment:
+        - APP_PROTOCOLO=${APP_PROTOCOLO}
+        - APP_HOST=${APP_HOST}
+        - APP_ORGAO=${APP_ORGAO}
+        - APP_ORGAO_DESCRICAO=${APP_ORGAO_DESCRICAO}
+        - APP_NOMECOMPLEMENTO=${APP_NOMECOMPLEMENTO}
+        - APP_DB_TIPO=${APP_DB_TIPO}
+        - APP_DB_PORTA=${APP_DB_PORTA}
+        - APP_DB_SIP_BASE=${APP_DB_SIP_BASE}
+        - APP_DB_SIP_USERNAME=${APP_DB_SIP_USERNAME}
+        - APP_DB_SIP_PASSWORD=${APP_DB_SIP_PASSWORD}
+        - APP_DB_SEI_BASE=${APP_DB_SEI_BASE}
+        - APP_DB_SEI_USERNAME=${APP_DB_SEI_USERNAME}
+        - APP_DB_SEI_PASSWORD=${APP_DB_SEI_PASSWORD}
+        - APP_DB_ROOT_USERNAME=${APP_DB_ROOT_USERNAME}
+        - APP_DB_ROOT_PASSWORD=${APP_DB_ROOT_PASSWORD}
+        - APP_SIP_CHAVE_ACESSO=${APP_SIP_CHAVE_ACESSO}
+        - APP_SEI_CHAVE_ACESSO=${APP_SEI_CHAVE_ACESSO}
+        links:
+        - db:db
+        - memcached:memcached
+        - solr:solr
+        - jod:jod
