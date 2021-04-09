@@ -23,6 +23,13 @@ services:
             io.rancher.container.start_once: "true"
         volumes:
             - ${VOLUME_FONTES_MOUNT}:/opt:rw
+            
+    storage-db:
+        image: "busybox:latest"
+        labels:
+            io.rancher.container.start_once: "true"
+        volumes:
+            - ${VOLUME_DB_MOUNT}:${DB_DATA_DIRECTORY}:rw
     
     jod:
         image: ${DOCKER_IMAGE_JOD}
@@ -33,14 +40,12 @@ services:
     db:
         image: ${DOCKER_IMAGE_BD}
   
-  
     solr:
         image: ${DOCKER_IMAGE_SOLR}
         
     app:
         image: ${DOCKER_IMAGE_APP}
         dns: "8.8.8.8"
-        command: ""
         entrypoint: "/entrypoint.sh"
         ports:
             - "80:80"
@@ -49,8 +54,7 @@ services:
             - storage-fontes
         labels:
             io.rancher.container.pull_image: always
-            io.rancher.sidekicks: storage-arquivosexternos
-            io.rancher.sidekicks: storage-fontes        
+            io.rancher.sidekicks: storage-arquivosexternos,storage-fontes    
         environment:
         - APP_PROTOCOLO=${APP_PROTOCOLO}
         - APP_HOST=${APP_HOST}
