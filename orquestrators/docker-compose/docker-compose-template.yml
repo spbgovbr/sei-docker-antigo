@@ -1,11 +1,11 @@
 version: '2'
 volumes:
     ${VOLUME_DB}:
-        external: ${VOLUME_DB_EXTERNAL}
-        driver: ${VOLUME_DB_DRIVER}
+        external: true
     ${VOLUME_ARQUIVOSEXTERNOS}:
-        external: ${VOLUME_ARQUIVOSEXTERNOS_EXTERNAL}
-        driver: ${VOLUME_ARQUIVOSEXTERNOS_DRIVER}
+        external: true
+    ${VOLUME_SOLR}:
+        external: true
     ${VOLUME_FONTES}:
         external: true
         
@@ -23,14 +23,7 @@ services:
             io.rancher.container.start_once: "true"
         volumes:
             - ${VOLUME_FONTES_MOUNT}:/opt:rw
-            
-    storage-db:
-        image: "busybox:latest"
-        labels:
-            io.rancher.container.start_once: "true"
-        volumes:
-            - ${VOLUME_DB_MOUNT}:${DB_DATA_DIRECTORY}:rw
-    
+                
     jod:
         image: ${DOCKER_IMAGE_JOD}
 
@@ -39,22 +32,63 @@ services:
 
     db:
         image: ${DOCKER_IMAGE_BD}
+        labels:
+            io.rancher.container.pull_image: always
+            io.rancher.sidekicks: storage-db
+        volumes:
+            - ${VOLUME_DB}:${DB_DATA_DIRECTORY}
+            
   
     solr:
         image: ${DOCKER_IMAGE_SOLR}
+        volumes:
+            - ${VOLUME_SOLR}:${SOLR_DATA_DIRECTORY}
         
-    app:
+    
+    app-atualizador:
         image: ${DOCKER_IMAGE_APP}
-        dns: "8.8.8.8"
-        entrypoint: "/entrypoint.sh"
-        ports:
-            - "80:80"
+        entrypoint: "/entrypoint-atualizador.sh"
         volumes_from:
             - storage-arquivosexternos
             - storage-fontes
         labels:
             io.rancher.container.pull_image: always
             io.rancher.sidekicks: storage-arquivosexternos,storage-fontes    
+        environment:
+        - APP_PROTOCOLO=${APP_PROTOCOLO}
+        - APP_HOST=${APP_HOST}
+        - APP_ORGAO=${APP_ORGAO}
+        - APP_ORGAO_DESCRICAO=${APP_ORGAO_DESCRICAO}
+        - APP_NOMECOMPLEMENTO=${APP_NOMECOMPLEMENTO}
+        - APP_DB_TIPO=${APP_DB_TIPO}
+        - APP_DB_PORTA=${APP_DB_PORTA}
+        - APP_DB_SIP_BASE=${APP_DB_SIP_BASE}
+        - APP_DB_SIP_USERNAME=${APP_DB_SIP_USERNAME}
+        - APP_DB_SIP_PASSWORD=${APP_DB_SIP_PASSWORD}
+        - APP_DB_SEI_BASE=${APP_DB_SEI_BASE}
+        - APP_DB_SEI_USERNAME=${APP_DB_SEI_USERNAME}
+        - APP_DB_SEI_PASSWORD=${APP_DB_SEI_PASSWORD}
+        - APP_DB_ROOT_USERNAME=${APP_DB_ROOT_USERNAME}
+        - APP_DB_ROOT_PASSWORD=${APP_DB_ROOT_PASSWORD}
+        - APP_SIP_CHAVE_ACESSO=${APP_SIP_CHAVE_ACESSO}
+        - APP_SEI_CHAVE_ACESSO=${APP_SEI_CHAVE_ACESSO}
+        links:
+        - db:db
+        - memcached:memcached
+        - solr:solr
+        - jod:jod    
+    app:
+        image: ${DOCKER_IMAGE_APP}
+        entrypoint: "/entrypoint.sh"
+        ports:
+            - "80:80"
+        volumes_from:
+            - storage-arquivosexternos
+            - storage-fontes
+            - app-atualizador
+        labels:
+            io.rancher.container.pull_image: always
+            io.rancher.sidekicks: storage-arquivosexternos,storage-fontes,app-atualizador    
         environment:
         - APP_PROTOCOLO=${APP_PROTOCOLO}
         - APP_HOST=${APP_HOST}
