@@ -10,7 +10,8 @@ LABEL maintainer="Guilherme Andrade Del Cantoni <guilherme.cantoni@economia.gov.
 
 ENV TERM xterm
 
-COPY assets /tmp/assets
+ADD https://github.com/spbgovbr/sei-docker-binarios/raw/main/pacoteslinux/msttcore-fonts-2.0-3.noarch.rpm \
+    assets /tmp/assets/
 
 RUN sh /tmp/assets/install.sh
 
